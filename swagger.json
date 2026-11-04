@@ -1,0 +1,409 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "CSE 341 Books API",
+    "version": "1.0.0",
+    "description": "Books and authors API."
+  },
+  "servers": [
+    {
+      "url": "/"
+    }
+  ],
+  "components": {
+    "parameters": {
+      "CustomId": {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Custom ID: 1–64 letters, digits, hyphens, or underscores.",
+        "schema": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-]{1,64}$"
+        },
+        "example": "a1"
+      }
+    },
+    "schemas": {
+      "Author": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "firstName",
+          "lastName"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,64}$",
+            "example": "a1"
+          },
+          "firstName": {
+            "type": "string",
+            "minLength": 1,
+            "example": "Maya"
+          },
+          "lastName": {
+            "type": "string",
+            "minLength": 1,
+            "example": "Rivera"
+          }
+        }
+      },
+      "AuthorCreate": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "firstName",
+          "lastName"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,64}$",
+            "example": "a2"
+          },
+          "firstName": {
+            "type": "string",
+            "minLength": 1,
+            "example": "Jordan"
+          },
+          "lastName": {
+            "type": "string",
+            "minLength": 1,
+            "example": "Lee"
+          }
+        }
+      },
+      "AuthorUpdate": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "firstName",
+          "lastName"
+        ],
+        "properties": {
+          "firstName": {
+            "type": "string",
+            "minLength": 1,
+            "example": "Jordan"
+          },
+          "lastName": {
+            "type": "string",
+            "minLength": 1,
+            "example": "Morgan"
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "message"
+        ],
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "responses": {
+      "InvalidId": {
+        "description": "The route ID does not match the custom-ID format.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "message": "Invalid id"
+            }
+          }
+        }
+      },
+      "InternalServerError": {
+        "description": "Unexpected server or database error.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "message": "Internal server error"
+            }
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/authors": {
+      "get": {
+        "summary": "Get all authors",
+        "tags": [
+          "Authors"
+        ],
+        "responses": {
+          "200": {
+            "description": "An array of authors, or an empty array.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Author"
+                  }
+                },
+                "example": [
+                  {
+                    "id": "a1",
+                    "firstName": "Maya",
+                    "lastName": "Rivera"
+                  }
+                ]
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create an author",
+        "tags": [
+          "Authors"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuthorCreate"
+              },
+              "example": {
+                "id": "a2",
+                "firstName": "Jordan",
+                "lastName": "Lee"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The created author.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Author"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing, invalid, or unexpected author data.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "Invalid author data"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The custom author ID is already in use.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "Author id already exists"
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/authors/{id}": {
+      "get": {
+        "summary": "Get an author by custom ID",
+        "tags": [
+          "Authors"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/CustomId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The matching author.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Author"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidId"
+          },
+          "404": {
+            "description": "No author exists with that ID.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "Author not found"
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "put": {
+        "summary": "Replace an author's mutable fields",
+        "description": "Full update. The route ID is immutable and must not be sent in the body.",
+        "tags": [
+          "Authors"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/CustomId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuthorUpdate"
+              },
+              "example": {
+                "firstName": "Jordan",
+                "lastName": "Morgan"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The updated author, including its unchanged custom ID.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Author"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid route ID or author data.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "invalidId": {
+                    "value": {
+                      "message": "Invalid id"
+                    }
+                  },
+                  "invalidAuthorData": {
+                    "value": {
+                      "message": "Invalid author data"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No author exists with that ID.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "Author not found"
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete an unreferenced author",
+        "description": "Deletion is rejected while any book references this author.",
+        "tags": [
+          "Authors"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/CustomId"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Author deleted; no response body."
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidId"
+          },
+          "404": {
+            "description": "No author exists with that ID.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "Author not found"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "One or more books reference this author; neither collection is changed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "Author cannot be deleted while books reference it"
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    }
+  },
+  "tags": []
+}
