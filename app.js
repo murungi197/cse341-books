@@ -22,7 +22,9 @@ app.use((error, req, res, next) => {
   if (error instanceof SyntaxError && error.status === 400 && 'body' in error) {
     const message = req.path.startsWith('/authors')
       ? 'Invalid author data'
-      : 'Invalid request body';
+      : req.path.startsWith('/books')
+        ? 'Invalid book data'
+        : 'Invalid request body';
     return res.status(400).json({ message });
   }
 

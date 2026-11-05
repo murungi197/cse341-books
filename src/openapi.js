@@ -50,6 +50,38 @@ const openApiSpec = swaggerJsdoc({
             lastName: { type: 'string', minLength: 1, example: 'Morgan' },
           },
         },
+        Book: {
+          type: 'object',
+          additionalProperties: false,
+          required: ['id', 'authorId', 'title', 'publicationDate'],
+          properties: {
+            id: { type: 'string', pattern: '^[A-Za-z0-9_-]{1,64}$', example: 'b1' },
+            authorId: { type: 'string', pattern: '^[A-Za-z0-9_-]{1,64}$', example: 'a1' },
+            title: { type: 'string', minLength: 1, example: 'Patterns of Light' },
+            publicationDate: { type: 'string', format: 'date', example: '2021-08-17' },
+          },
+        },
+        BookCreate: {
+          type: 'object',
+          additionalProperties: false,
+          required: ['id', 'authorId', 'title', 'publicationDate'],
+          properties: {
+            id: { type: 'string', pattern: '^[A-Za-z0-9_-]{1,64}$', example: 'b4' },
+            authorId: { type: 'string', pattern: '^[A-Za-z0-9_-]{1,64}$', example: 'a1' },
+            title: { type: 'string', minLength: 1, example: 'Example Book Title' },
+            publicationDate: { type: 'string', format: 'date', example: '2026-01-15' },
+          },
+        },
+        BookUpdate: {
+          type: 'object',
+          additionalProperties: false,
+          required: ['authorId', 'title', 'publicationDate'],
+          properties: {
+            authorId: { type: 'string', pattern: '^[A-Za-z0-9_-]{1,64}$', example: 'a2' },
+            title: { type: 'string', minLength: 1, example: 'Updated Book Title' },
+            publicationDate: { type: 'string', format: 'date', example: '2026-02-20' },
+          },
+        },
         Error: {
           type: 'object',
           additionalProperties: false,
@@ -64,6 +96,15 @@ const openApiSpec = swaggerJsdoc({
             'application/json': {
               schema: { $ref: '#/components/schemas/Error' },
               example: { message: 'Invalid id' },
+            },
+          },
+        },
+        BookNotFound: {
+          description: 'No book exists with that id.',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/Error' },
+              example: { message: 'Book not found' },
             },
           },
         },
