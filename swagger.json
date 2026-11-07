@@ -26,6 +26,17 @@
     },
     "schemas": {
       "Author": {
+        "description": "Current and legacy author records returned from storage.",
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/CurrentAuthor"
+          },
+          {
+            "$ref": "#/components/schemas/LegacyAuthor"
+          }
+        ]
+      },
+      "CurrentAuthor": {
         "type": "object",
         "additionalProperties": false,
         "required": [
@@ -48,6 +59,31 @@
             "type": "string",
             "minLength": 1,
             "example": "Rivera"
+          }
+        }
+      },
+      "LegacyAuthor": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name",
+          "birthYear"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,64}$",
+            "example": "a1"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "example": "Jane Austen"
+          },
+          "birthYear": {
+            "type": "integer",
+            "example": 1775
           }
         }
       },
@@ -97,6 +133,96 @@
           }
         }
       },
+      "Book": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "authorId",
+          "title",
+          "publicationDate"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,64}$",
+            "example": "b1"
+          },
+          "authorId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,64}$",
+            "example": "a1"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "example": "Patterns of Light"
+          },
+          "publicationDate": {
+            "type": "string",
+            "format": "date",
+            "example": "2021-08-17"
+          }
+        }
+      },
+      "BookCreate": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "authorId",
+          "title",
+          "publicationDate"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,64}$",
+            "example": "b4"
+          },
+          "authorId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,64}$",
+            "example": "a1"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "example": "Example Book Title"
+          },
+          "publicationDate": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-01-15"
+          }
+        }
+      },
+      "BookUpdate": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "authorId",
+          "title",
+          "publicationDate"
+        ],
+        "properties": {
+          "authorId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,64}$",
+            "example": "a2"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "example": "Updated Book Title"
+          },
+          "publicationDate": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-02-20"
+          }
+        }
+      },
       "Error": {
         "type": "object",
         "additionalProperties": false,
@@ -124,6 +250,19 @@
           }
         }
       },
+      "BookNotFound": {
+        "description": "No book exists with that id.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "message": "Book not found"
+            }
+          }
+        }
+      },
       "InternalServerError": {
         "description": "Unexpected server or database error.",
         "content": {
@@ -140,6 +279,198 @@
     }
   },
   "paths": {
+    "/books": {
+      "get": {
+        "summary": "Get all books",
+        "tags": [
+          "Books"
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of books",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Book"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a book",
+        "tags": [
+          "Books"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BookCreate"
+              },
+              "example": {
+                "id": "b4",
+                "authorId": "a1",
+                "title": "Example Book Title",
+                "publicationDate": "2026-01-15"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The created book.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Book"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid fields, missing data, duplicate ID, or missing author.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "Invalid book data"
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/books/{id}": {
+      "get": {
+        "summary": "Get a book by custom ID",
+        "tags": [
+          "Books"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/CustomId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The matching book.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Book"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidId"
+          },
+          "404": {
+            "$ref": "#/components/responses/BookNotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update a book",
+        "tags": [
+          "Books"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/CustomId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BookUpdate"
+              },
+              "example": {
+                "authorId": "a2",
+                "title": "Updated Book Title",
+                "publicationDate": "2026-02-20"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The updated book.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Book"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid route ID, invalid data, or referenced author does not exist.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "Invalid book data"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/BookNotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete a book",
+        "tags": [
+          "Books"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/CustomId"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "The book was deleted."
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidId"
+          },
+          "404": {
+            "$ref": "#/components/responses/BookNotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
     "/authors": {
       "get": {
         "summary": "Get all authors",

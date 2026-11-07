@@ -66,6 +66,15 @@ test('update author validation rejects immutable IDs and trims mutable fields', 
 });
 
 test('Swagger documents all five author routes and their error responses', () => {
+  assert.deepEqual(openApiSpec.components.schemas.Author.oneOf, [
+    { $ref: '#/components/schemas/CurrentAuthor' },
+    { $ref: '#/components/schemas/LegacyAuthor' },
+  ]);
+  assert.deepEqual(openApiSpec.components.schemas.LegacyAuthor.required, [
+    'id',
+    'name',
+    'birthYear',
+  ]);
   assert.deepEqual(Object.keys(openApiSpec.paths['/authors']).sort(), ['get', 'post']);
   assert.deepEqual(Object.keys(openApiSpec.paths['/authors/{id}']).sort(), [
     'delete',

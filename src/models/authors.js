@@ -5,6 +5,8 @@ const authorProjection = {
   id: 1,
   firstName: 1,
   lastName: 1,
+  name: 1,
+  birthYear: 1,
 };
 
 const getAllAuthors = async () => {
