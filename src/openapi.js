@@ -22,6 +22,13 @@ const openApiSpec = swaggerJsdoc({
       },
       schemas: {
         Author: {
+          description: 'Current and legacy author records returned from storage.',
+          oneOf: [
+            { $ref: '#/components/schemas/CurrentAuthor' },
+            { $ref: '#/components/schemas/LegacyAuthor' },
+          ],
+        },
+        CurrentAuthor: {
           type: 'object',
           additionalProperties: false,
           required: ['id', 'firstName', 'lastName'],
@@ -29,6 +36,16 @@ const openApiSpec = swaggerJsdoc({
             id: { type: 'string', pattern: '^[A-Za-z0-9_-]{1,64}$', example: 'a1' },
             firstName: { type: 'string', minLength: 1, example: 'Maya' },
             lastName: { type: 'string', minLength: 1, example: 'Rivera' },
+          },
+        },
+        LegacyAuthor: {
+          type: 'object',
+          additionalProperties: false,
+          required: ['id', 'name', 'birthYear'],
+          properties: {
+            id: { type: 'string', pattern: '^[A-Za-z0-9_-]{1,64}$', example: 'a1' },
+            name: { type: 'string', minLength: 1, example: 'Jane Austen' },
+            birthYear: { type: 'integer', example: 1775 },
           },
         },
         AuthorCreate: {
