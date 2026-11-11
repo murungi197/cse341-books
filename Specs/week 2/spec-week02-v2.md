@@ -135,6 +135,7 @@ Authors are stored in the `authors` collection:
 - `id`: required custom string ID.
 - `firstName`: required non-empty string.
 - `lastName`: required non-empty string.
+- Existing legacy records with `name` and `birthYear` are returned in their stored shape by author read routes; new and updated authors use the current `firstName` and `lastName` shape.
 
 Example:
 

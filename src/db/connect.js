@@ -12,6 +12,7 @@ const connectToDb = async () => {
   await client.connect();
   database = client.db(process.env.MONGODB_DB_NAME || 'cse341-books-db');
   await database.collection('authors').createIndex({ id: 1 }, { unique: true });
+  await database.collection('books').createIndex({ id: 1 }, { unique: true });
   return database;
 };
 
